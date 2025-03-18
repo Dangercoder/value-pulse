@@ -1,0 +1,968 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Ruby LLM Assistant Rule
+
+- You can @ files here
+- You can use markdown but dont have to
+
+## Purpose
+This rule provides Ruby programming assistance, focusing on:
+- Clean, idiomatic Ruby code examples
+- Rails application guidance
+- Gem installation troubleshooting
+- Ruby version management solutions
+
+## Behavior
+When triggered, the assistant will:
+1. Prioritize practical code solutions
+2. Explain Ruby-specific concepts clearly
+3. Suggest best practices for Ruby/Rails development
+4. Provide step-by-step instructions for complex setups
+
+## Context
+The assistant will recognize Ruby-specific terminology and tools including:
+- RVM and rbenv version managers
+- Bundler, Gems, and dependency management
+- Rails framework components
+- PostgreSQL integration issues
+
+
+
+For the LLM integration we're going to use RubyLLM which is an idiomatic wrapper. Here's the docs: 
+
+Skip to content
+Navigation Menu
+crmne
+ruby_llm
+
+Type / to search
+Code
+Issues
+16
+Pull requests
+8
+Discussions
+Actions
+Projects
+Security
+Insights
+Owner avatar
+ruby_llm
+Public
+crmne/ruby_llm
+Go to file
+t
+Name		
+crmne
+crmne
+Add system prompts section to chat guide
+0f3eb66
+ · 
+3 days ago
+.github/workflows
+Update CI workflow triggers and enhance README and documentation with…
+3 weeks ago
+bin
+Bump version to 0.1.0.pre37; enable new cops in RuboCop configuration…
+3 weeks ago
+docs
+Add system prompts section to chat guide
+3 days ago
+lib
+Replaced Calculator example with Weather example.
+3 days ago
+spec
+Replaced Calculator example with Weather example.
+3 days ago
+.gitignore
+Update .gitignore, remove Gemfile.lock, and add dotenv dependencies
+last month
+.overcommit.yml
+Enable RuboCop in Overcommit for code formatting checks
+last month
+.rspec
+Add RSpec configuration, tests, and update client functionality
+last month
+.rspec_status
+Replaced Calculator example with Weather example.
+3 days ago
+.rubocop.yml
+Update RuboCop configuration to exclude vendor directory from linting
+3 weeks ago
+.yardopts
+Add documentation structure and configuration for RubyLLM; include in…
+3 weeks ago
+Gemfile
+Bump version to 0.1.0.pre37; enable new cops in RuboCop configuration…
+3 weeks ago
+LICENSE
+Create LICENSE
+last month
+README.md
+Replaced Calculator example with Weather example.
+3 days ago
+Rakefile
+Bump version to 0.1.0.pre26, add Gemini and DeepSeek providers, and e…
+last month
+ruby_llm.gemspec
+Update gem dependencies to use pessimistic version constraints for be…
+3 weeks ago
+Repository files navigation
+README
+MIT license
+RubyLLM
+
+A delightful Ruby way to work with AI. No configuration madness, no complex callbacks, no handler hell – just beautiful, expressive Ruby code.
+
+OpenAI      Anthropic      Google      DeepSeek
+Gem Version Ruby Style Guide Gem Downloads codecov
+
+🤺 Battle tested at 💬 Chat with Work
+
+The problem with AI libraries
+Every AI provider comes with its own client library, its own response format, its own conventions for streaming, and its own way of handling errors. Want to use multiple providers? Prepare to juggle incompatible APIs and bloated dependencies.
+
+RubyLLM fixes all that. One beautiful API for everything. One consistent format. Minimal dependencies — just Faraday and Zeitwerk. Because working with AI should be a joy, not a chore.
+
+Features
+💬 Chat with OpenAI, Anthropic, Gemini, and DeepSeek models
+👁️ Vision and Audio understanding
+📄 PDF Analysis for analyzing documents
+🖼️ Image generation with DALL-E and other providers
+📊 Embeddings for vector search and semantic analysis
+🔧 Tools that let AI use your Ruby code
+🚂 Rails integration to persist chats and messages with ActiveRecord
+🌊 Streaming responses with proper Ruby patterns
+What makes it great
+# Just ask questions
+chat = RubyLLM.chat
+chat.ask "What's the best way to learn Ruby?"
+
+# Analyze images
+chat.ask "What's in this image?", with: { image: "ruby_conf.jpg" }
+
+# Analyze audio recordings
+chat.ask "Describe this meeting", with: { audio: "meeting.wav" }
+
+# Analyze documents
+chat.ask "Summarize this document", with: { pdf: "contract.pdf" }
+
+# Generate images
+RubyLLM.paint "a sunset over mountains in watercolor style"
+
+# Create vector embeddings
+RubyLLM.embed "Ruby is elegant and expressive"
+
+# Let AI use your code
+class Weather < RubyLLM::Tool
+  description "Gets current weather for a location"
+  param :latitude, desc: "Latitude (e.g., 52.5200)"
+  param :longitude, desc: "Longitude (e.g., 13.4050)"
+
+  def execute(latitude:, longitude:)
+    url = "https://api.open-meteo.com/v1/forecast?latitude=#{latitude}&longitude=#{longitude}&current=temperature_2m,wind_speed_10m"
+
+    response = Faraday.get(url)
+    data = JSON.parse(response.body)
+  rescue => e
+    { error: e.message }
+  end
+end
+
+chat.with_tool(Weather).ask "What's the weather in Berlin? (52.5200, 13.4050)"
+Installation
+# In your Gemfile
+gem 'ruby_llm'
+
+# Then run
+bundle install
+
+# Or install it yourself
+gem install ruby_llm
+Configure with your API keys:
+
+RubyLLM.configure do |config|
+  config.openai_api_key = ENV['OPENAI_API_KEY']
+  config.anthropic_api_key = ENV['ANTHROPIC_API_KEY']
+  config.gemini_api_key = ENV['GEMINI_API_KEY']
+  config.deepseek_api_key = ENV['DEEPSEEK_API_KEY'] # Optional
+end
+Have great conversations
+# Start a chat with the default model (GPT-4o-mini)
+chat = RubyLLM.chat
+
+# Or specify what you want
+chat = RubyLLM.chat(model: 'claude-3-7-sonnet-20250219')
+
+# Simple questions just work
+chat.ask "What's the difference between attr_reader and attr_accessor?"
+
+# Multi-turn conversations are seamless
+chat.ask "Could you give me an example?"
+
+# Stream responses in real-time
+chat.ask "Tell me a story about a Ruby programmer" do |chunk|
+  print chunk.content
+end
+
+# Understand content in multiple forms
+chat.ask "Compare these diagrams", with: { image: ["diagram1.png", "diagram2.png"] }
+chat.ask "Summarize this document", with: { pdf: "contract.pdf" }
+chat.ask "What's being said?", with: { audio: "meeting.wav" }
+
+# Need a different model mid-conversation? No problem
+chat.with_model('gemini-2.0-flash').ask "What's your favorite algorithm?"
+Rails integration that makes sense
+# app/models/chat.rb
+class Chat < ApplicationRecord
+  acts_as_chat
+
+  # Works great with Turbo
+  broadcasts_to ->(chat) { "chat_#{chat.id}" }
+end
+
+# app/models/message.rb
+class Message < ApplicationRecord
+  acts_as_message
+end
+
+# app/models/tool_call.rb
+class ToolCall < ApplicationRecord
+  acts_as_tool_call
+end
+
+# In your controller
+chat = Chat.create!(model_id: "gpt-4o-mini")
+chat.ask("What's your favorite Ruby gem?") do |chunk|
+  Turbo::StreamsChannel.broadcast_append_to(
+    chat,
+    target: "response",
+    partial: "messages/chunk",
+    locals: { chunk: chunk }
+  )
+end
+
+# That's it - chat history is automatically saved
+Creating tools is a breeze
+class Search < RubyLLM::Tool
+  description "Searches a knowledge base"
+
+  param :query, desc: "The search query"
+  param :limit, type: :integer, desc: "Max results", required: false
+
+  def execute(query:, limit: 5)
+    # Your search logic here
+    Document.search(query).limit(limit).map(&:title)
+  end
+end
+
+# Let the AI use it
+chat.with_tool(Search).ask "Find documents about Ruby 3.3 features"
+Learn more
+Check out the guides at https://rubyllm.com for deeper dives into conversations with tools, streaming responses, embedding generations, and more.
+
+License
+Released under the MIT License.
+
+About
+A delightful Ruby way to work with AI. No configuration madness, no complex callbacks, no handler hell – just beautiful, expressive Ruby code.
+
+rubyllm.com/
+Topics
+ruby rails ai embeddings gemini openai image-generation claude dall-e llm chatgpt anthropic deepseek
+Resources
+ Readme
+License
+ MIT license
+ Activity
+Stars
+ 1.6k stars
+Watchers
+ 14 watching
+Forks
+ 46 forks
+Report repository
+Releases 2
+1.0.0
+Latest
+last week
++ 1 release
+Packages
+1
+ruby_llm
+Deployments
+24
+ github-pages 3 days ago
++ 23 deployments
+Languages
+Ruby
+99.9%
+ 
+Shell
+0.1%
+Footer
+© 2025 GitHub, Inc.
+Footer navigation
+Terms
+Privacy
+Security
+Status
+Docs
+Contact
+Manage cookies
+Do not share my personal information
+Skip to main content
+Home
+Installation
+
+Guides
+Getting Started
+Chat
+Tools
+Streaming
+Rails Integration
+Image Generation
+Embeddings
+Error Handling
+Working with Models
+GitHub 
+This site uses Just the Docs, a documentation theme for Jekyll.
+Search RubyLLM
+Guides	Rails Integration
+Rails Integration
+RubyLLM provides seamless integration with Rails through ActiveRecord models. This allows you to easily persist chats, messages, and tool calls in your database.
+
+Setup
+1. Create Migrations
+First, create the necessary tables in your database:
+
+# db/migrate/YYYYMMDDHHMMSS_create_chats.rb
+class CreateChats < ActiveRecord::Migration[8.0]
+  def change
+    create_table :chats do |t|
+      t.string :model_id
+      t.timestamps
+    end
+  end
+end
+
+# db/migrate/YYYYMMDDHHMMSS_create_messages.rb
+class CreateMessages < ActiveRecord::Migration[8.0]
+  def change
+    create_table :messages do |t|
+      t.references :chat, null: false, foreign_key: true
+      t.string :role
+      t.text :content
+      t.string :model_id
+      t.integer :input_tokens
+      t.integer :output_tokens
+      t.references :tool_call
+      t.timestamps
+    end
+  end
+end
+
+# db/migrate/YYYYMMDDHHMMSS_create_tool_calls.rb
+class CreateToolCalls < ActiveRecord::Migration[8.0]
+  def change
+    create_table :tool_calls do |t|
+      t.references :message, null: false, foreign_key: true
+      t.string :tool_call_id, null: false
+      t.string :name, null: false
+      t.jsonb :arguments, default: {}
+      t.timestamps
+    end
+
+    add_index :tool_calls, :tool_call_id
+  end
+end
+
+Run the migrations:
+
+rails db:migrate
+
+2. Set Up Models
+Create the model classes:
+
+# app/models/chat.rb
+class Chat < ApplicationRecord
+  acts_as_chat
+end
+
+# app/models/message.rb
+class Message < ApplicationRecord
+  acts_as_message
+end
+
+# app/models/tool_call.rb
+class ToolCall < ApplicationRecord
+  acts_as_tool_call
+end
+
+3. Configure RubyLLM
+In an initializer (e.g., config/initializers/ruby_llm.rb):
+
+RubyLLM.configure do |config|
+  config.openai_api_key = ENV['OPENAI_API_KEY']
+  config.anthropic_api_key = ENV['ANTHROPIC_API_KEY']
+  config.gemini_api_key = ENV['GEMINI_API_KEY']
+  config.deepseek_api_key = ENV['DEEPSEEK_API_KEY']
+end
+
+Basic Usage
+Once your models are set up, you can use them like any other Rails model:
+
+# Create a new chat
+chat = Chat.create!(model_id: 'gpt-4o-mini')
+
+# Ask a question
+chat.ask "What's the capital of France?"
+
+# The response is automatically persisted
+puts chat.messages.last.content
+
+# Continue the conversation
+chat.ask "Tell me more about that city"
+
+# All messages are stored in the database
+chat.messages.order(:created_at).each do |message|
+  puts "#{message.role}: #{message.content}"
+end
+
+Streaming Responses
+You can stream responses while still persisting the final result:
+
+chat = Chat.create!(model_id: 'gpt-4o-mini')
+
+chat.ask "Write a short poem about Ruby" do |chunk|
+  # Stream content to the user
+  ActionCable.server.broadcast "chat_#{chat.id}", { content: chunk.content }
+end
+
+# The complete message is saved in the database
+puts chat.messages.last.content
+
+Using with Hotwire
+RubyLLM’s Rails integration works seamlessly with Hotwire for real-time updates:
+
+# app/models/chat.rb
+class Chat < ApplicationRecord
+  acts_as_chat
+
+  # Add broadcast capabilities
+  broadcasts_to ->(chat) { "chat_#{chat.id}" }
+end
+
+In your controller:
+
+# app/controllers/chats_controller.rb
+class ChatsController < ApplicationController
+  def show
+    @chat = Chat.find(params[:id])
+  end
+
+  def ask
+    @chat = Chat.find(params[:id])
+
+    # Use a background job to avoid blocking
+    ChatJob.perform_later(@chat.id, params[:message])
+
+    # Let the user know we're working on it
+    respond_to do |format|
+      format.turbo_stream
+      format.html { redirect_to @chat }
+    end
+  end
+end
+
+Create a background job:
+
+# app/jobs/chat_job.rb
+class ChatJob < ApplicationJob
+  queue_as :default
+
+  def perform(chat_id, message)
+    chat = Chat.find(chat_id)
+
+    # Start with a "typing" indicator
+    Turbo::StreamsChannel.broadcast_append_to(
+      chat,
+      target: "messages",
+      partial: "messages/typing"
+    )
+
+    chat.ask(message) do |chunk|
+      # Remove typing indicator after first chunk
+      if chunk == chat.messages.last.to_llm.content[0...chunk.content.length]
+        Turbo::StreamsChannel.broadcast_remove_to(
+          chat,
+          target: "typing"
+        )
+      end
+
+      # Update the streaming message
+      Turbo::StreamsChannel.broadcast_replace_to(
+        chat,
+        target: "assistant_message_#{chat.messages.last.id}",
+        partial: "messages/message",
+        locals: { message: chat.messages.last, content: chunk.content }
+      )
+    end
+  end
+end
+
+In your views:
+
+<!-- app/views/chats/show.html.erb -->
+<%= turbo_stream_from @chat %>
+
+<div id="messages">
+  <%= render @chat.messages %>
+</div>
+
+<%= form_with(url: ask_chat_path(@chat), method: :post) do |f| %>
+  <%= f.text_area :message %>
+  <%= f.submit "Send" %>
+<% end %>
+
+Using Tools
+Tools work seamlessly with Rails integration:
+
+class Weather < RubyLLM::Tool
+  description "Gets current weather for a location"
+  param :location, desc: "City name or zip code"
+
+  def execute(location:)
+    # Simulate weather lookup
+    "15°C and sunny in #{location}"
+  end
+end
+
+# Add the tool to your chat
+chat = Chat.create!(model_id: 'gpt-4o-mini')
+chat.with_tool(Weather)
+
+# Ask a question that requires calculation
+chat.ask "What's the weather in Berlin?"
+
+# Tool calls are persisted
+tool_call = chat.messages.find_by(role: 'assistant').tool_calls.first
+puts "Tool: #{tool_call.name}"
+puts "Arguments: #{tool_call.arguments}"
+
+Customizing Models
+You can customize the behavior of your models:
+
+class Chat < ApplicationRecord
+  acts_as_chat
+
+  # Add custom behavior
+  belongs_to :user
+  has_many :tags
+
+  # Add custom scopes
+  scope :recent, -> { order(created_at: :desc).limit(10) }
+  scope :by_model, ->(model_id) { where(model_id: model_id) }
+
+  # Add custom methods
+  def summarize
+    self.ask "Please summarize our conversation so far."
+  end
+
+  def token_count
+    messages.sum { |m| (m.input_tokens || 0) + (m.output_tokens || 0) }
+  end
+end
+
+Message Content Customization
+You can customize how message content is stored or extracted:
+
+class Message < ApplicationRecord
+  acts_as_message
+
+  # Override content handling
+  def extract_content
+    # For example, compress or expand content
+    JSON.parse(content) rescue content
+  end
+end
+
+Advanced Integration
+User Association
+Associate chats with users:
+
+# Migration
+add_reference :chats, :user, foreign_key: true
+
+# Model
+class Chat < ApplicationRecord
+  acts_as_chat
+  belongs_to :user
+end
+
+# Usage
+user.chats.create!(model_id: 'gpt-4o-mini').ask("Hello!")
+
+Metadata and Tagging
+Add metadata to chats:
+
+# Migration
+add_column :chats, :metadata, :jsonb, default: {}
+
+# Model
+class Chat < ApplicationRecord
+  acts_as_chat
+end
+
+# Usage
+chat = Chat.create!(
+  model_id: 'gpt-4o-mini',
+  metadata: {
+    purpose: 'customer_support',
+    category: 'billing',
+    priority: 'high'
+  }
+)
+
+Scoping and Filtering
+Create scopes for easier querying:
+
+class Chat < ApplicationRecord
+  acts_as_chat
+
+  scope :using_gpt, -> { where("model_id LIKE ?", "gpt-%") }
+  scope :using_claude, -> { where("model_id LIKE ?", "claude-%") }
+  scope :recent, -> { order(created_at: :desc).limit(10) }
+  scope :with_high_token_count, -> {
+    joins(:messages)
+    .group(:id)
+    .having("SUM(messages.input_tokens + messages.output_tokens) > ?", 10000)
+  }
+end
+
+Performance Considerations
+For high-volume applications:
+
+Background Processing: Use background jobs for AI requests
+Connection Pooling: Ensure your database connection pool is sized appropriately
+Pagination: Use pagination when showing chat histories
+Archiving: Consider archiving old chats to maintain performance
+# Example background job
+class AskAiJob < ApplicationJob
+  queue_as :ai_requests
+
+  def perform(chat_id, message)
+    chat = Chat.find(chat_id)
+    chat.ask(message)
+  end
+end
+
+# Usage
+AskAiJob.perform_later(chat.id, "Tell me about Ruby")
+
+Next Steps
+Now that you’ve integrated RubyLLM with Rails, you might want to explore:
+
+Using Tools to add capabilities to your chats
+Streaming Responses for a better user experience
+Error Handling to handle AI service issues gracefully
+Copyright © 2025 Carmine Paolino. Distributed under an MIT license.
+
+Skip to main content
+Home
+Installation
+
+Guides
+Getting Started
+Chat
+Tools
+Streaming
+Rails Integration
+Image Generation
+Embeddings
+Error Handling
+Working with Models
+GitHub 
+This site uses Just the Docs, a documentation theme for Jekyll.
+Search RubyLLM
+Guides	Embeddings
+Embeddings
+Text embeddings are numerical representations of text that capture semantic meaning. RubyLLM makes it easy to generate embeddings for a variety of applications, including semantic search, clustering, and recommendation systems.
+
+Basic Embedding Generation
+The simplest way to create an embedding is with the global embed method:
+
+# Create an embedding for a single text
+embedding = RubyLLM.embed("Ruby is a programmer's best friend")
+
+# The vector representation
+vector = embedding.vectors
+puts "Vector dimension: #{vector.length}"  # => 1536 for text-embedding-3-small
+
+Embedding Multiple Texts
+You can efficiently embed multiple texts at once:
+
+# Create embeddings for multiple texts
+texts = ["Ruby", "Python", "JavaScript"]
+embeddings = RubyLLM.embed(texts)
+
+# Each text gets its own vector
+puts "Number of vectors: #{embeddings.vectors.length}"  # => 3
+puts "First vector dimensions: #{embeddings.vectors.first.length}"
+
+Choosing Models
+By default, RubyLLM uses OpenAI’s text-embedding-3-small, but you can specify a different model:
+
+# Use a specific model
+embedding = RubyLLM.embed(
+  "This is a test sentence",
+  model: "text-embedding-3-large"
+)
+
+# Or use a Google model
+google_embedding = RubyLLM.embed(
+  "This is a test sentence",
+  model: "text-embedding-004"
+)
+
+You can configure the default embedding model globally:
+
+RubyLLM.configure do |config|
+  config.default_embedding_model = "text-embedding-3-large"
+end
+
+Using Embedding Results
+Vector Properties
+The embedding result contains useful information:
+
+embedding = RubyLLM.embed("Example text")
+
+# The vector representation
+puts embedding.vectors.class  # => Array
+puts embedding.vectors.first.class  # => Float
+
+# The model used
+puts embedding.model  # => "text-embedding-3-small"
+
+# Token usage
+puts embedding.input_tokens  # => 3
+
+Calculating Similarity
+Embeddings are commonly used to calculate similarity between texts:
+
+require 'matrix'
+
+# Create embeddings for two texts
+embedding1 = RubyLLM.embed("I love Ruby programming")
+embedding2 = RubyLLM.embed("Ruby is my favorite language")
+
+# Convert to Vector objects
+vector1 = Vector.elements(embedding1.vectors)
+vector2 = Vector.elements(embedding2.vectors)
+
+# Calculate cosine similarity
+similarity = vector1.inner_product(vector2) / (vector1.norm * vector2.norm)
+puts "Similarity: #{similarity}"  # Higher values (closer to 1) mean more similar
+
+Simple Semantic Search
+# Create a simple search index
+class SearchIndex
+  def initialize(texts, model: nil)
+    @texts = texts
+    @embeddings = RubyLLM.embed(texts, model: model).vectors
+  end
+
+  def search(query, top_k: 3)
+    query_embedding = RubyLLM.embed(query).vectors
+    query_vector = Vector.elements(query_embedding)
+
+    # Calculate similarities
+    similarities = @embeddings.map.with_index do |embedding, idx|
+      vector = Vector.elements(embedding)
+      similarity = query_vector.inner_product(vector) / (query_vector.norm * vector.norm)
+      [idx, similarity]
+    end
+
+    # Return top results
+    similarities.sort_by { |_, similarity| -similarity }
+                .take(top_k)
+                .map { |idx, similarity| { text: @texts[idx], similarity: similarity } }
+  end
+end
+
+# Create an index
+documents = [
+  "Ruby is a dynamic, interpreted language",
+  "Python is known for its readability",
+  "JavaScript runs in the browser",
+  "Ruby on Rails is a web framework",
+  "Django is a Python web framework"
+]
+
+index = SearchIndex.new(documents)
+
+# Search for similar documents
+results = index.search("web development frameworks")
+results.each do |result|
+  puts "#{result[:text]} (Similarity: #{result[:similarity].round(4)})"
+end
+
+Error Handling
+Handle errors that may occur during embedding generation:
+
+begin
+  embedding = RubyLLM.embed("Example text")
+rescue RubyLLM::UnauthorizedError
+  puts "Please check your API key"
+rescue RubyLLM::BadRequestError => e
+  puts "Invalid request: #{e.message}"
+rescue RubyLLM::Error => e
+  puts "Error generating embedding: #{e.message}"
+end
+
+Performance Considerations
+When working with embeddings, keep these best practices in mind:
+
+Batch processing - Embedding multiple texts at once is more efficient than making separate calls
+Caching - Store embeddings in your database rather than regenerating them
+Dimensionality - Different models produce embeddings with different dimensions
+Normalization - Consider normalizing vectors to improve similarity calculations
+Working with Large Datasets
+For larger datasets, process embeddings in batches:
+
+def embed_in_batches(texts, batch_size: 100, model: nil)
+  all_embeddings = []
+
+  texts.each_slice(batch_size) do |batch|
+    batch_embeddings = RubyLLM.embed(batch, model: model).vectors
+    all_embeddings.concat(batch_embeddings)
+
+    # Optional: add a small delay to avoid rate limiting
+    sleep(0.1)
+  end
+
+  all_embeddings
+end
+
+# Usage
+documents = File.readlines("documents.txt", chomp: true)
+embeddings = embed_in_batches(documents)
+
+Rails Integration
+In a Rails application, you might integrate embeddings like this:
+
+class Document < ApplicationRecord
+  serialize :embedding, Array
+
+  before_save :generate_embedding, if: -> { content_changed? }
+
+  def self.search(query, limit: 10)
+    # Generate query embedding
+    query_embedding = RubyLLM.embed(query).vectors
+
+    # Convert to SQL for similarity search
+    where.not(embedding: nil)
+         .select("*, (embedding <=> ?) AS similarity", query_embedding)
+         .order("similarity DESC")
+         .limit(limit)
+  end
+
+  private
+
+  def generate_embedding
+    return if content.blank?
+
+    self.embedding = RubyLLM.embed(content).vectors
+  rescue RubyLLM::Error => e
+    errors.add(:base, "Failed to generate embedding: #{e.message}")
+    throw :abort
+  end
+end
+
+Note: The above example assumes you’re using PostgreSQL with the pgvector extension for vector similarity search.
+
+Example Use Cases
+Document Classification
+# Train a simple classifier
+class SimpleClassifier
+  def initialize
+    @categories = {}
+  end
+
+  def train(text, category)
+    @categories[category] ||= []
+    @categories[category] << RubyLLM.embed(text).vectors
+  end
+
+  def classify(text)
+    # Get embedding for the query text
+    query_embedding = RubyLLM.embed(text).vectors
+    query_vector = Vector.elements(query_embedding)
+
+    # Find the closest category
+    best_similarity = -1
+    best_category = nil
+
+    @categories.each do |category, embeddings|
+      # Calculate average similarity to this category
+      similarity = embeddings.map do |embedding|
+        vector = Vector.elements(embedding)
+        query_vector.inner_product(vector) / (query_vector.norm * vector.norm)
+      end.sum / embeddings.size
+
+      if similarity > best_similarity
+        best_similarity = similarity
+        best_category = category
+      end
+    end
+
+    { category: best_category, confidence: best_similarity }
+  end
+end
+
+# Usage
+classifier = SimpleClassifier.new
+
+# Train with examples
+classifier.train("How do I install Ruby?", :installation)
+classifier.train("Setting up Ruby environment", :installation)
+classifier.train("What are blocks in Ruby?", :language_features)
+classifier.train("Understanding Ruby modules", :language_features)
+
+# Classify new queries
+puts classifier.classify("How to install Ruby on Ubuntu?")
+# => {:category=>:installation, :confidence=>0.92}
+
+Content Recommendation
+def recommend_similar_content(content_id, library, count: 3)
+  # Get the target content
+  target = library.find(content_id)
+  target_embedding = RubyLLM.embed(target.description).vectors
+  target_vector = Vector.elements(target_embedding)
+
+  # Compare with all other content
+  similarities = library.reject { |item| item.id == content_id }.map do |item|
+    next if item.embedding.nil?
+
+    item_vector = Vector.elements(item.embedding)
+    similarity = target_vector.inner_product(item_vector) / (target_vector.norm * item_vector.norm)
+
+    [item, similarity]
+  end.compact
+
+  # Return top matches
+  similarities.sort_by { |_, similarity| -similarity }
+              .take(count)
+              .map { |item, similarity| { item: item, similarity: similarity } }
+end
+
+Next Steps
+Now that you understand embeddings, you might want to explore:
+
+Chat for interactive AI conversations
+Tools to extend AI capabilities
+Error Handling for robust applications
+Copyright © 2025 Carmine Paolino. Distributed under an MIT license.

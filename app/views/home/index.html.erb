@@ -1,0 +1,67 @@
+<div class="w-full bg-white">
+  <%= turbo_stream_from "property_analysis_#{session.id.to_s}" %>
+
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="text-center mb-10">
+      <div class="flex justify-center mb-4">
+        <%= image_tag "logo.webp", class: "h-16 w-auto", alt: "Value Pulse Logo" %>
+      </div>
+      <h1 class="text-5xl font-bold text-gray-900 tracking-tight">
+        Value Pulse
+      </h1>
+      <p class="mt-4 text-xl text-gray-500">
+        Analyze property values with AI-powered insights
+      </p>
+    </div>
+
+    <!-- Main Content Area (Form or Results) -->
+    <div class="max-w-3xl mx-auto mb-8">
+      <!-- Analysis Result Container -->
+      <div id="analysis_result">
+        <!-- Initial Form Content -->
+        <div class="mb-6">
+          <h2 class="text-2xl font-semibold text-gray-900 mb-2">Property Details</h2>
+          <p class="text-gray-600">Enter detailed information about the property for accurate analysis.</p>
+        </div>
+
+        <%= form_with url: analyze_property_path, method: :post do |f| %>
+          <div class="space-y-6">
+            <!-- Property Address Field -->
+            <!-- TODO use google api to fetch address -->
+            <div>
+              <label for="address" class="block text-base font-medium text-gray-900 mb-2">
+                Property Address
+              </label>
+              <%= f.text_field :address, 
+                  class: "block w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500",
+                  placeholder: "Enter the full property address..." %>
+            </div>
+
+            <!-- Additional Information Field -->
+            <div>
+              <label for="additional_info" class="block text-base font-medium text-gray-900 mb-2">
+                Additional Information
+              </label>
+              <%= f.text_area :additional_info,
+                  rows: 4,
+                  class: "block w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500",
+                  placeholder: "Any additional details about the property..." %>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="mt-6 flex justify-end">
+              <%= f.submit "Analyze Property", 
+                  class: "rounded-lg bg-indigo-600 px-6 py-3 text-base font-medium text-white hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2" %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="mt-8 border-t border-gray-200 pt-4 text-center text-gray-500 text-sm">
+      Powered by advanced AI analysis to provide accurate property valuations
+    </div>
+  </div>
+</div>
