@@ -1,9 +1,9 @@
 class PropertyAnalysisJob < ApplicationJob
   queue_as :default
 
-  def perform(property_analysis_id)
+  def perform(property_analysis_id, session_id)
     # Log the start of analysis
-    Rails.logger.info("Starting property analysis for: #{address}")
+    Rails.logger.info("Starting property analysis for: #{property_analysis_id}")
 
     begin
       # Perform property analysis using RubyLLM

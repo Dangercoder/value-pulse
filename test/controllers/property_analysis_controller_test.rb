@@ -39,7 +39,7 @@ class PropertyAnalysisControllerTest < ActionDispatch::IntegrationTest
     end
     
     analysis = PropertyAnalysis.last
-    assert_enqueued_with(job: PropertyAnalysisJob, args: [analysis.id])
+    assert_enqueued_with(job: PropertyAnalysisJob, args: [analysis.id, session.id.to_s])
   end
   
   test "should create PropertyAnalysis record for valid address" do
