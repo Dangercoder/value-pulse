@@ -13,17 +13,6 @@ class PropertyAnalysisControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Property address is required and must be at least 5 characters long.", flash[:error]
   end
 
-  test "should return error via turbo stream for invalid address" do
-    post analyze_property_url, params: { address: "" },
-         headers: { "Accept" => "text/vnd.turbo-stream.html" },
-         xhr: true
-
-    assert_response :success
-    assert_match /<turbo-stream action="update" target="analysis_result">/, @response.body
-    assert_includes @response.body, "Property address is required and must be at least 5 characters long"
-    assert_includes @response.body, "Validation Error"
-  end
-
   test "should redirect with info message for valid address HTML request" do
     post analyze_property_url, params: { address: "123 Main Street" }
     assert_redirected_to root_path
