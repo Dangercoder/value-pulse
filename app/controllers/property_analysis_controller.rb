@@ -26,7 +26,7 @@ class PropertyAnalysisController < ApplicationController
 
     # Subscribe the user to their own analysis channel
     Turbo::StreamsChannel.verified_stream_name(
-      "property_analysis_#{session.id.to_s}"
+      "property_analysis_#{session.id}"
     )
 
     respond_to do |format|

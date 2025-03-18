@@ -37,40 +37,40 @@ puts "Sending request to Anthropic Claude..."
 begin
   # Create a new chat with Claude model
   chat = RubyLLM.chat(model: 'claude-3-7-sonnet-20250219')
-  
+
   # Prepare the prompt
   prompt = <<~PROMPT
     You are an expert real estate appraiser. I need you to estimate the value of a property with the following details:
-    
+
     Address: #{test_address}
     Additional Details: #{test_info}
-    
+
     Please provide a valuation with the following structure:
-    
+
     1. Estimated value range (minimum and maximum)
     2. Confidence level (low, medium, high)
     3. Key factors affecting the valuation
     4. Recommendations for potentially increasing the property value
   PROMPT
-  
+
   # Send to Claude
   puts "Using model: #{chat.model}"
-  
+
   # Ask with response streaming
   puts
   puts "=== Claude Response ==="
   puts
-  
+
   response = chat.ask(prompt) do |chunk|
     print chunk.content
   end
-  
+
   puts
   puts
   puts "=== Analysis Complete ==="
   puts "Response generated successfully using #{chat.model}"
   puts "If you see a property valuation above, your Anthropic Claude configuration is working correctly!"
-  
+
 rescue => e
   puts
   puts "ERROR: #{e.message}"
@@ -82,4 +82,4 @@ rescue => e
   puts "4. Verify API quotas/limits haven't been exceeded"
   puts
   puts e.backtrace.join("\n") if ENV['DEBUG']
-end 
+end
