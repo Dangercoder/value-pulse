@@ -31,17 +31,20 @@
             <!-- TODO use google api to fetch address -->
             <div>
               <label for="address" class="block text-base font-medium text-gray-900 mb-2">
-                Property Address
+                Property Address <span class="text-red-600">*</span>
               </label>
               <%= f.text_field :address, 
+                  required: true,
+                  minlength: 5,
                   class: "block w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500",
                   placeholder: "Enter the full property address..." %>
+              <p class="mt-1 text-sm text-gray-500">Must be at least 5 characters long</p>
             </div>
 
             <!-- Additional Information Field -->
             <div>
               <label for="additional_info" class="block text-base font-medium text-gray-900 mb-2">
-                Additional Information
+                Additional Information <span class="text-gray-500 font-normal">(Optional)</span>
               </label>
               <%= f.text_area :additional_info,
                   rows: 4,
