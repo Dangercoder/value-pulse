@@ -10,12 +10,12 @@ class PropertyAnalysisController < ApplicationController
           flash[:error] = "Property address is required and must be at least 5 characters long."
           redirect_to root_path
         end
-        
+
         format.turbo_stream do
           render turbo_stream: turbo_stream.update(
             "analysis_result",
             partial: "property_analysis/error",
-            locals: { 
+            locals: {
               message: "Property address is required and must be at least 5 characters long."
             }
           )
@@ -30,17 +30,17 @@ class PropertyAnalysisController < ApplicationController
         flash[:info] = "Your property analysis request has been submitted and is being processed."
         redirect_to root_path
       end
-      
+
       format.turbo_stream do
         # First show the placeholder "analyzing" message
         render turbo_stream: turbo_stream.update(
           "analysis_result",
           partial: "property_analysis/analyzing"
         )
-        
+
         # Then enqueue the actual analysis job
         PropertyAnalysisJob.perform_later(@address, @additional_info, session.id.to_s)
       end
     end
   end
-end 
+end
