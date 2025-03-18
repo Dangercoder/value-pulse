@@ -3,47 +3,71 @@
   <p class="text-gray-600">AI-powered analysis of your property's market value.</p>
 </div>
 
+<% 
+  # Get the property analysis record if available
+  property_analysis = PropertyAnalysis.find_by(address: analysis[:address]) rescue nil
+  property_result = property_analysis&.result
+
+  # If we have a saved result, use its structured data, otherwise extract from content
+  if property_result.present?
+    property_type = property_result.property_type&.humanize || "Residential Property"
+    price_range = property_result.price_display
+    confidence_level = property_result.confidence_level || "unknown"
+    confidence_color = property_result.confidence_color_classes
+  else
+    # Fallback to regex extraction (existing code)
+    property_type = if analysis[:content].present? && analysis[:content] =~ /Property Type:\s*([^<\n]+)/
+      $1.strip
+    else
+      "Residential Property"
+    end
+    
+    price_range = if analysis[:content].present? && analysis[:content] =~ /Estimated Value Range:?\s*([^<\n]+)/i
+      $1.strip
+    else
+      "Price information unavailable"
+    end
+
+    confidence_level = if analysis[:content].present? && analysis[:content] =~ /confidence level:?\s*(Low|Medium|High)/i
+      $1.downcase
+    else
+      "unknown"
+    end
+    
+    confidence_colors = {
+      "low" => "bg-red-100 text-red-800 border-red-300",
+      "medium" => "bg-yellow-100 text-yellow-800 border-yellow-300",
+      "high" => "bg-green-100 text-green-800 border-green-300",
+      "unknown" => "bg-gray-100 text-gray-800 border-gray-300"
+    }
+    
+    confidence_color = confidence_colors[confidence_level]
+  end
+%>
+
 <!-- Property Information Header Card -->
 <div class="bg-white rounded-lg border border-gray-200 p-6 mb-6">
   <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
     <div class="mb-4 md:mb-0">
       <h3 class="text-lg font-semibold text-gray-900"><%= analysis[:address] %></h3>
-      <% 
-        # Extract property type from analysis content if available
-        property_type = if analysis[:content] =~ /Property Type:\s*([^<\n]+)/
-          $1.strip
-        else
-          "Residential Property"
-        end
-        
-        # Extract price range from analysis content
-        price_range = if analysis[:content] =~ /Estimated Value Range:?\s*([^<\n]+)/i
-          $1.strip
-        else
-          "Price information unavailable"
-        end
-      %>
       <p class="text-gray-600"><%= property_type %></p>
       <p class="text-xl font-bold text-indigo-700 mt-1"><%= price_range %></p>
+      
+      <% if property_result.present? && (property_result.bedrooms.present? || property_result.bathrooms.present? || property_result.square_footage.present? || property_result.year_built.present?) %>
+        <div class="mt-2 text-sm text-gray-600">
+          <% if property_result.bedrooms.present? && property_result.bathrooms.present? %>
+            <span><%= property_result.bedrooms %> bed, <%= property_result.bathrooms %> bath</span> · 
+          <% end %>
+          <% if property_result.square_footage.present? %>
+            <span><%= number_with_delimiter(property_result.square_footage) %> sq ft</span>
+            <% if property_result.year_built.present? %> · <% end %>
+          <% end %>
+          <% if property_result.year_built.present? %>
+            <span>Built <%= property_result.year_built %></span>
+          <% end %>
+        </div>
+      <% end %>
     </div>
-
-    <% 
-      # Extract confidence level from analysis content
-      confidence_level = if analysis[:content] =~ /confidence level:?\s*(Low|Medium|High)/i
-        $1.downcase
-      else
-        "unknown"
-      end
-      
-      confidence_colors = {
-        "low" => "bg-red-100 text-red-800 border-red-300",
-        "medium" => "bg-yellow-100 text-yellow-800 border-yellow-300",
-        "high" => "bg-green-100 text-green-800 border-green-300",
-        "unknown" => "bg-gray-100 text-gray-800 border-gray-300"
-      }
-      
-      confidence_color = confidence_colors[confidence_level]
-    %>
     
     <div class="flex items-center">
       <div class="<%= confidence_color %> rounded-lg py-2 px-4 border font-semibold">
@@ -55,26 +79,60 @@
 
 <!-- Main Analysis Content -->
 <div class="bg-white rounded-lg border border-gray-200 p-6 mb-6">
-  <div class="prose prose-sm max-w-none">
-    <%= raw analysis[:content].gsub(
-      # Remove the confidence level section since we're showing it as a badge
-      /Confidence Level.*?(Low|Medium|High).*?(?=Key Factors|$)/mi, 
-      ""
-    ).gsub(
-      # Remove the price range since we're showing it at the top
-      /Estimated Value Range:?.*?(?=Key Factors|Confidence Level|$)/mi,
-      ""
-    ).gsub(
-      # Make property info section smaller since we show it at the top
-      /(Property Valuation:.*?)(?=Estimated Value Range|Key Factors|$)/mi,
-      "<div class='text-sm text-gray-500'>\\1</div>"
-    ) %>
-  </div>
+  <% if property_result.present? && property_result.key_factors.present? %>
+    <div class="mb-6">
+      <h3 class="text-lg font-semibold text-gray-900 mb-2">Key Factors Affecting Valuation</h3>
+      <div class="prose prose-sm max-w-none">
+        <%= raw property_result.key_factors %>
+      </div>
+    </div>
+  <% end %>
+
+  <% if property_result.present? && property_result.comparable_properties.present? %>
+    <div class="mb-6">
+      <h3 class="text-lg font-semibold text-gray-900 mb-2">Comparable Properties</h3>
+      <div class="prose prose-sm max-w-none">
+        <%= raw property_result.comparable_properties %>
+      </div>
+    </div>
+  <% end %>
+
+  <% if property_result.present? && property_result.market_trends.present? %>
+    <div class="mb-6">
+      <h3 class="text-lg font-semibold text-gray-900 mb-2">Market Trends</h3>
+      <div class="prose prose-sm max-w-none">
+        <%= raw property_result.market_trends %>
+      </div>
+    </div>
+  <% end %>
+  
+  <% if property_result.blank? || (property_result.key_factors.blank? && property_result.comparable_properties.blank? && property_result.market_trends.blank?) %>
+    <!-- Fallback to using the raw content if we don't have structured data -->
+    <div class="prose prose-sm max-w-none">
+      <% if analysis[:content].present? %>
+        <%= raw analysis[:content].gsub(
+          # Remove the confidence level section since we're showing it as a badge
+          /Confidence Level.*?(Low|Medium|High).*?(?=Key Factors|$)/mi, 
+          ""
+        ).gsub(
+          # Remove the price range since we're showing it at the top
+          /Estimated Value Range:?.*?(?=Key Factors|Confidence Level|$)/mi,
+          ""
+        ).gsub(
+          # Make property info section smaller since we show it at the top
+          /(Property Valuation:.*?)(?=Estimated Value Range|Key Factors|$)/mi,
+          "<div class='text-sm text-gray-500'>\\1</div>"
+        ) %>
+      <% else %>
+        <p>No detailed content is available for this analysis.</p>
+      <% end %>
+    </div>
+  <% end %>
   
   <div class="mt-6 pt-6 border-t border-gray-200">
     <div class="flex items-center justify-between text-sm">
       <p class="text-gray-500">
-        Generated by <%= analysis[:model_used] %> on <%= analysis[:timestamp] %>
+        Generated by <%= property_result&.model_used || analysis[:model_used] %> on <%= analysis[:timestamp] %>
       </p>
     </div>
   </div>
