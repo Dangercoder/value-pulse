@@ -24,6 +24,11 @@ class PropertyAnalysisController < ApplicationController
       return
     end
 
+    # Subscribe the user to their own analysis channel
+    Turbo::StreamsChannel.verified_stream_name(
+      "property_analysis_#{session.id.to_s}"
+    )
+
     respond_to do |format|
       format.html do
         # Handle HTML response - redirect or render a template

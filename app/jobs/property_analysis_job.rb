@@ -2,50 +2,100 @@ class PropertyAnalysisJob < ApplicationJob
   queue_as :default
 
   def perform(address, additional_info, session_id)
-    # Simulate analysis taking time (remove in production)
-    sleep 3
-
-    # In a real application, you would call an AI service or API here
-    analysis_result = generate_analysis(address, additional_info)
-
-    # Broadcast the result back to the browser using Turbo Streams
-    Turbo::StreamsChannel.broadcast_update_to(
-      "property_analysis_#{session_id}",
-      target: "analysis_result",
-      partial: "property_analysis/result",
-      locals: {
-        address: address,
-        additional_info: additional_info,
-        analysis: analysis_result
-      }
-    )
-  end
-
-  private
-
-  def generate_analysis(address, additional_info)
-    # In production, this would be replaced with actual AI analysis logic
-    # This is just a placeholder that creates a somewhat realistic-looking response
-
-    response = "PROPERTY ANALYSIS REPORT\n\n"
-    response += "Based on the provided address#{additional_info.present? ? ' and additional information' : ''}, "
-    response += "our AI analysis indicates the following:\n\n"
-
-    # Generate some fake insights
-    response += "• Market Value: The estimated value range is $#{rand(300..900)},000 to $#{rand(400..1000)},000\n"
-    response += "• Market Trend: Property values in this area have #{[ 'increased', 'remained stable', 'slightly decreased' ].sample} in the past year\n"
-    response += "• Investment Potential: #{[ 'Excellent', 'Good', 'Average', 'Fair' ].sample} long-term investment prospect\n"
-    response += "• Comparable Properties: Found #{rand(3..12)} similar properties in the area\n"
-
-    if additional_info.present?
-      response += "\nBased on your additional details, we've also determined:\n"
-      response += "• #{[ "The property's unique features may increase its market value.",
-                       "Recent renovations could significantly impact resale value.",
-                       "The property's age may affect maintenance costs." ].sample}\n"
+    # Log the start of analysis
+    Rails.logger.info("Starting property analysis for: #{address}")
+    
+    begin
+      # Perform property analysis using RubyLLM
+      analysis_result = analyze_property(address, additional_info)
+      
+      # Broadcast the result back to the client
+      Turbo::StreamsChannel.broadcast_update_to(
+        "property_analysis_#{session_id}",
+        target: "analysis_result",
+        partial: "property_analysis/result",
+        locals: { analysis: analysis_result }
+      )
+      
+      # Save the analysis to the database if needed
+      # PropertyAnalysis.create!(
+      #   address: address,
+      #   additional_info: additional_info,
+      #   result: analysis_result,
+      #   session_id: session_id
+      # )
+      
+    rescue => e
+      Rails.logger.error("Error in property analysis: #{e.message}")
+      
+      # Broadcast error message
+      Turbo::StreamsChannel.broadcast_update_to(
+        "property_analysis_#{session_id}",
+        target: "analysis_result",
+        partial: "property_analysis/error",
+        locals: { message: "An error occurred during property analysis: #{e.message}" }
+      )
     end
-
-    response += "\nNote: This is an AI-generated analysis and should be used as a general guide only."
-
-    response
+  end
+  
+  private
+  
+  def analyze_property(address, additional_info)
+    # Create a description of the property
+    property_description = generate_property_description(address, additional_info)
+    
+    # Create a chat with Anthropic's Claude model
+    chat = RubyLLM.chat(model: 'claude-3-7-sonnet-20250219')
+    
+    # Ask Claude to analyze and valuate the property
+    prompt = <<~PROMPT
+      You are an expert real estate appraiser. I need you to estimate the value of a property with the following details:
+      
+      #{property_description}
+      
+      Please provide a valuation in HTML format with the following sections clearly labeled with their respective headings.
+      Each heading must be exactly as shown (including capitalization and colon):
+      
+      1. "Property Valuation: [ADDRESS]" - Clearly state the full address here
+      2. "Property Type: [TYPE]" - State if it's an apartment, house, villa, condo, etc.
+      3. "Estimated Value Range: [MIN] - [MAX]" - Include the currency with the values
+      4. "Confidence Level: [LEVEL]" - Must be exactly one of these words: Low, Medium, or High
+      5. "Key Factors Affecting Valuation:" - List key factors (location, size, market conditions)
+      6. "Recommendations for Increasing Property Value:" - List 2-4 specific recommendations
+      
+      Important format requirements:
+      - For "Confidence Level:", use ONLY one of these exact words: "Low", "Medium", or "High" (correct capitalization)
+      - Present the estimated value range in the appropriate currency for the property's location
+      - Use h3 tags for section headings
+      - Use ul/li tags for lists of factors and recommendations
+      - Keep explanations concise and factual
+      - If information is missing, acknowledge this in the relevant sections
+      
+      The output will be displayed directly to users in a web application.
+    PROMPT
+    
+    # Get the AI response
+    response = chat.ask(prompt)
+    
+    # Return the content from the response
+    {
+      content: response.content,
+      model_used: chat.model,
+      address: address,
+      timestamp: Time.current.to_s
+    }
+  end
+  
+  def generate_property_description(address, additional_info)
+    description = []
+    description << "Address: #{address}" if address.present?
+    
+    # Parse additional info if it's in a structured format
+    # This would depend on how your form sends the additional info
+    if additional_info.present?
+      description << "Additional Information: #{additional_info}"
+    end
+    
+    description.join("\n")
   end
 end
