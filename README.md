@@ -25,18 +25,8 @@ To use this application, you need to set up your Anthropic API key:
    ANTHROPIC_API_KEY=your_anthropic_api_key_here
    ```
 
-### Installation
-
-```bash
-# Install dependencies
-bundle install
-
-# Set up the database
-bin/rails db:create db:migrate
-
-# Start the server
-bin/rails server
-```
+### Installing dev dependencies 
+Run `sh ./setup.sh`
 
 ### Testing the AI Connection
 
