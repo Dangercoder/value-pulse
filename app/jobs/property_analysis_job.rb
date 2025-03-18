@@ -1,13 +1,15 @@
 class PropertyAnalysisJob < ApplicationJob
   queue_as :default
 
-  def perform(address, additional_info, session_id)
+  def perform(property_analysis_id)
     # Log the start of analysis
     Rails.logger.info("Starting property analysis for: #{address}")
 
     begin
       # Perform property analysis using RubyLLM
-      analysis_result = analyze_property(address, additional_info)
+      analysis = PropertyAnalysis.find(property_analysis_id)
+      analysis.update(state: :processing)
+      analysis_result = analyze_property(analysis.address, analysis.additional_info)
 
       # Broadcast the result back to the client
       Turbo::StreamsChannel.broadcast_update_to(

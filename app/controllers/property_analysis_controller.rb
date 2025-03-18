@@ -46,7 +46,7 @@ class PropertyAnalysisController < ApplicationController
         )
 
         # Then enqueue the actual analysis job
-        PropertyAnalysisJob.perform_later(@address, @additional_info, session.id.to_s)
+        PropertyAnalysisJob.perform_later(@analysis.id)
       end
     end
   end

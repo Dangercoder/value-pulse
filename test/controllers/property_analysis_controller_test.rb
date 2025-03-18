@@ -37,6 +37,9 @@ class PropertyAnalysisControllerTest < ActionDispatch::IntegrationTest
            headers: { "Accept" => "text/vnd.turbo-stream.html" },
            xhr: true
     end
+    
+    analysis = PropertyAnalysis.last
+    assert_enqueued_with(job: PropertyAnalysisJob, args: [analysis.id])
   end
   
   test "should create PropertyAnalysis record for valid address" do
@@ -47,7 +50,6 @@ class PropertyAnalysisControllerTest < ActionDispatch::IntegrationTest
            xhr: true
     end
     
-    # Verify the record contents
     analysis = PropertyAnalysis.last
     assert_equal "123 Main Street", analysis.address
     assert_equal "Built in 2010", analysis.additional_info
