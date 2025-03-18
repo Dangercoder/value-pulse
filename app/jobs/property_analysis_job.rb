@@ -46,6 +46,7 @@ class PropertyAnalysisJob < ApplicationJob
     
     # Create a chat with Anthropic's Claude model
     chat = RubyLLM.chat(model: 'claude-3-7-sonnet-20250219')
+    model_name = 'claude-3-7-sonnet-20250219' # Store the model name directly
     
     # Ask Claude to analyze and valuate the property
     prompt = <<~PROMPT
@@ -80,7 +81,7 @@ class PropertyAnalysisJob < ApplicationJob
     # Return the content from the response
     {
       content: response.content,
-      model_used: chat.model,
+      model_used: model_name,
       address: address,
       timestamp: Time.current.to_s
     }
