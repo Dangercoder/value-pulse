@@ -33,6 +33,18 @@ class PropertyAnalysisController < ApplicationController
           partial: "property_analysis/analyzing"
         )
 
+        # Create a new property analysis record
+       @analysis = PropertyAnalysis.create(
+          address: @address,
+          additional_info: @additional_info || '',
+          state: :pending
+        )
+
+        # Subscribe the user to the analysis channel
+        Turbo::StreamsChannel.verified_stream_name(
+          "property_analysis_#{@analysis.id}"
+        )
+
         # Then enqueue the actual analysis job
         PropertyAnalysisJob.perform_later(@address, @additional_info, session.id.to_s)
       end
