@@ -38,4 +38,19 @@ class PropertyAnalysisControllerTest < ActionDispatch::IntegrationTest
            xhr: true
     end
   end
+  
+  test "should create PropertyAnalysis record for valid address" do
+    assert_difference -> { PropertyAnalysis.count }, 1 do
+      post analyze_property_url,
+           params: { address: "123 Main Street", additional_info: "Built in 2010" },
+           headers: { "Accept" => "text/vnd.turbo-stream.html" },
+           xhr: true
+    end
+    
+    # Verify the record contents
+    analysis = PropertyAnalysis.last
+    assert_equal "123 Main Street", analysis.address
+    assert_equal "Built in 2010", analysis.additional_info
+    assert_equal "pending", analysis.state
+  end
 end
