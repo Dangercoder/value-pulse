@@ -10,16 +10,6 @@ class PropertyAnalysisController < ApplicationController
           flash[:error] = "Property address is required and must be at least 5 characters long."
           redirect_to root_path
         end
-
-        format.turbo_stream do
-          render turbo_stream: turbo_stream.update(
-            "analysis_result",
-            partial: "property_analysis/error",
-            locals: {
-              message: "Property address is required and must be at least 5 characters long."
-            }
-          )
-        end
       end
       return
     end
