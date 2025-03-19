@@ -3,18 +3,22 @@ class PropertyAnalysisService
     @property_analysis = property_analysis
   end
 
-  def perform_analysis(session_id)
-    # Log the start of analysis
+  def perform_analysis(stream_name)
     Rails.logger.info("Starting property analysis for: #{@property_analysis.id}")
 
     begin
-      # Update analysis state
       @property_analysis.update(state: :processing)
 
-      # Get analysis result
+      # Broadcast an update that we're processing
+      Turbo::StreamsChannel.broadcast_update_to(
+        stream_name,
+        target: "analysis_result",
+        partial: "property_analysis/analyzing",
+        locals: { status: "Processing property data..." }
+      )
+
       analysis_result = analyze_property(@property_analysis.address, @property_analysis.additional_info)
 
-      # Log the result for debugging
       if analysis_result[:content].blank?
         Rails.logger.error("Content is blank in analysis result")
         analysis_result[:content] = "<h3>Property Valuation: #{@property_analysis.address}</h3><p>We apologize, but we couldn't generate a detailed analysis at this time.</p>"
@@ -22,47 +26,35 @@ class PropertyAnalysisService
 
       result_data = PropertyAnalysisResult.extract_from_content(analysis_result[:content])
 
-      # Force valid property_type for testing if not already set
       if result_data[:property_type].nil? || !PropertyAnalysisResult::PROPERTY_TYPES.include?(result_data[:property_type])
         result_data[:property_type] = "single_family"
       end
 
-        result = @property_analysis.create_or_update_result_from_content(analysis_result[:content], analysis_result[:model_used])
-          @property_analysis.reload
+      result = @property_analysis.create_or_update_result_from_content(analysis_result[:content], analysis_result[:model_used])
+      @property_analysis.reload
 
-      # Mark the analysis as completed
       @property_analysis.update(state: :completed)
 
-      # Ensure analysis_result has all required keys
       analysis_result[:content] ||= ""
       analysis_result[:model_used] ||= "Unknown model"
       analysis_result[:address] ||= @property_analysis.address
       analysis_result[:timestamp] ||= Time.current.to_s
 
-      # Return the result for broadcasting
       analysis_result
     rescue => e
-      Rails.logger.error("Error in property analysis: #{e.message}")
-      Rails.logger.error(e.backtrace.join("\n"))
-
-      # Update the analysis state
       @property_analysis.update(state: :error) rescue nil
 
-      # Raise error to be handled by caller
+      # Re-raise the error so the job can handle it
       raise e
     end
   end
 
   def analyze_property(address, additional_info)
-    # Create a description of the property
     property_description = generate_property_description(address, additional_info)
 
-
-    # Create a chat with Anthropic's Claude model
     chat = RubyLLM.chat(model: "claude-3-7-sonnet-20250219")
     model_name = "claude-3-7-sonnet-20250219" # Store the model name directly
 
-    # Ask Claude to analyze and valuate the property
     prompt = <<~PROMPT
       You are an expert real estate appraiser. I need you to estimate the value of a property with the following details:
 
@@ -92,20 +84,16 @@ class PropertyAnalysisService
       The output will be displayed directly to users in a web application.
     PROMPT
 
-    # Get the AI response
-    Rails.logger.info("Sending prompt to Claude")
-
     response = nil
     begin
       response = chat.ask(prompt)
     rescue => e
-      Rails.logger.error("Error during Claude API call: #{e.message}")
+      Rails.logger.error("Error during Claude API call: #{e.message} when processing analysis: #{@property_analysis.id}")
       raise e
     end
 
     content = safely_extract_content(response)
 
-    # Return the content from the response
     {
       content: content,
       model_used: model_name,
@@ -118,10 +106,8 @@ class PropertyAnalysisService
   def safely_extract_content(response)
     return "<p>No response received from AI.</p>" if response.nil?
 
-    # Try different approaches to extract content based on RubyLLM version
     content = nil
 
-    # Approach 1: Direct content method
     if response.respond_to?(:content)
       begin
         content = response.content
@@ -130,7 +116,6 @@ class PropertyAnalysisService
       end
     end
 
-    # Provide a fallback if we still don't have content
     if content.nil? || content.empty?
       content = "<p>We apologize, but we couldn't generate a property analysis at this time.</p>"
       Rails.logger.error("Failed to extract any content from response")
@@ -143,8 +128,6 @@ class PropertyAnalysisService
     description = []
     description << "Address: #{address}" if address.present?
 
-    # Parse additional info if it's in a structured format
-    # This would depend on how your form sends the additional info
     if additional_info.present?
       description << "Additional Information: #{additional_info}"
     end

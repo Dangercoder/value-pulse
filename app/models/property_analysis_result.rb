@@ -57,6 +57,7 @@ class PropertyAnalysisResult < ApplicationRecord
   end
 
   # Extract structured data from raw analysis content
+  # TODO write unit tests for this
   def self.extract_from_content(content)
     result = {}
 

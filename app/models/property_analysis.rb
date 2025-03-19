@@ -40,7 +40,6 @@ class PropertyAnalysis < ApplicationRecord
            Rails.logger.error("Result is invalid: #{result.errors.full_messages.inspect}")
          end
 
-         # Reload from database to confirm it was saved
          reload
          result
        end
