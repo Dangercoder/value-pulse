@@ -7,18 +7,26 @@ class PropertyAnalysisJob < ApplicationJob
 
     begin
       # Find the property analysis record
-      analysis = PropertyAnalysis.find(property_analysis_id)
+      property_analysis = PropertyAnalysis.find(property_analysis_id)
 
       # Use the PropertyAnalysisService to perform the analysis
-      service = PropertyAnalysisService.new(analysis)
+      service = PropertyAnalysisService.new(property_analysis)
       analysis_result = service.perform_analysis(session_id)
+      
+      # Reload to get the latest data with the result
+      property_analysis.reload
+      property_result = property_analysis.result
 
       # Broadcast the result back to the client
       Turbo::StreamsChannel.broadcast_update_to(
         "property_analysis_#{session_id}",
         target: "analysis_result",
         partial: "property_analysis/result",
-        locals: { analysis: analysis_result }
+        locals: { 
+          analysis: analysis_result,
+          property_analysis: property_analysis,
+          property_result: property_result
+        }
       )
 
     rescue => e

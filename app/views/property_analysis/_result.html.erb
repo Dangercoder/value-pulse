@@ -4,11 +4,8 @@
 </div>
 
 <% 
-  # Get the property analysis record if available
-  property_analysis = PropertyAnalysis.find_by(address: analysis[:address]) rescue nil
-  property_result = property_analysis&.result
-
-  # If we have a saved result, use its structured data, otherwise extract from content
+  # Use property_analysis and property_result passed from controller
+  # Extract values from result object or fallback to regex extraction
   if property_result.present?
     property_type = property_result.property_type&.humanize || "Residential Property"
     price_range = property_result.price_display
