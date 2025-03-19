@@ -12,7 +12,7 @@ class PropertyAnalysisJob < ApplicationJob
       # Use the PropertyAnalysisService to perform the analysis
       service = PropertyAnalysisService.new(property_analysis)
       analysis_result = service.perform_analysis(session_id)
-      
+
       # Reload to get the latest data with the result
       property_analysis.reload
       property_result = property_analysis.result
@@ -22,7 +22,7 @@ class PropertyAnalysisJob < ApplicationJob
         "property_analysis_#{session_id}",
         target: "analysis_result",
         partial: "property_analysis/result",
-        locals: { 
+        locals: {
           analysis: analysis_result,
           property_analysis: property_analysis,
           property_result: property_result

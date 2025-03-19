@@ -71,4 +71,4 @@ gem "tailwindcss-rails", "~> 4.2"
 
 gem "hotwire-livereload", "~> 2.0", group: :development
 
-gem "dockerfile-rails", ">= 1.7", :group => :development
+gem "dockerfile-rails", ">= 1.7", group: :development

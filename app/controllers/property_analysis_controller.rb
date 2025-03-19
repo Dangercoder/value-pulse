@@ -14,7 +14,7 @@ class PropertyAnalysisController < ApplicationController
     end
 
     Turbo::StreamsChannel.verified_stream_name(
-      "property_analysis_#{session.id.to_s}"
+      "property_analysis_#{session.id}"
     )
 
     respond_to do |format|
