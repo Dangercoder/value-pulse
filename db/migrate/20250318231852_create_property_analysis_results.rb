@@ -22,7 +22,7 @@ class CreatePropertyAnalysisResults < ActiveRecord::Migration[8.0]
       t.string :model_used
 
       t.timestamps
-      
+
       t.index :estimated_price
       t.index :property_type
       t.index :confidence_level

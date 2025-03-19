@@ -37,11 +37,11 @@ class PropertyAnalysisControllerTest < ActionDispatch::IntegrationTest
            headers: { "Accept" => "text/vnd.turbo-stream.html" },
            xhr: true
     end
-    
+
     analysis = PropertyAnalysis.last
-    assert_enqueued_with(job: PropertyAnalysisJob, args: [analysis.id, session.id.to_s])
+    assert_enqueued_with(job: PropertyAnalysisJob, args: [ analysis.id, session.id.to_s ])
   end
-  
+
   test "should create PropertyAnalysis record for valid address" do
     assert_difference -> { PropertyAnalysis.count }, 1 do
       post analyze_property_url,
@@ -49,7 +49,7 @@ class PropertyAnalysisControllerTest < ActionDispatch::IntegrationTest
            headers: { "Accept" => "text/vnd.turbo-stream.html" },
            xhr: true
     end
-    
+
     analysis = PropertyAnalysis.last
     assert_equal "123 Main Street", analysis.address
     assert_equal "Built in 2010", analysis.additional_info

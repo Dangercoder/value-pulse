@@ -8,7 +8,7 @@ class PropertyAnalysisJob < ApplicationJob
     begin
       # Find the property analysis record
       analysis = PropertyAnalysis.find(property_analysis_id)
-      
+
       # Use the PropertyAnalysisService to perform the analysis
       service = PropertyAnalysisService.new(analysis)
       analysis_result = service.perform_analysis(session_id)

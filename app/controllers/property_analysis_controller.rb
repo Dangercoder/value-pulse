@@ -33,10 +33,10 @@ class PropertyAnalysisController < ApplicationController
           partial: "property_analysis/analyzing"
         )
 
-        # Create a new property analysis record
+       # Create a new property analysis record
        @analysis = PropertyAnalysis.create(
           address: @address,
-          additional_info: @additional_info || '',
+          additional_info: @additional_info || "",
           state: :pending
         )
 
