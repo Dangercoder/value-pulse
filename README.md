@@ -1,6 +1,6 @@
 # Value Pulse - AI-Powered Property Valuation
 
-AVL example application that uses AI to analyze and estimate property values.
+AVM example application that uses AI to analyze and estimate property values.
 
 * Developed with ruby `ruby 3.4.2 (2025-02-15 revision d2930f8e7a) +PRISM [arm64-darwin24]`
 * Uses https://github.com/kirillplatonov/hotwire-livereload for hot reload
