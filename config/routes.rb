@@ -10,8 +10,18 @@ Rails.application.routes.draw do
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
   # Root path route ("/")
-  root "home#index"
+  root "home#marketing"
+  
+  # Marketing home page (keeping this for backward compatibility)
+  get "home", to: "home#marketing", as: :marketing_home
+  
+  # Property analyzer page
+  get "analyze", to: "property_analysis#index", as: :property_analyzer
 
   # Property analysis routes
   post "analyze_property", to: "property_analysis#analyze", as: :analyze_property
+
+  # Add these lines for the Places API controller
+  get 'places/autocomplete', to: 'places_api#autocomplete'
+  get 'places/details', to: 'places_api#details'
 end

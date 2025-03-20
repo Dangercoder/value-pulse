@@ -1,0 +1,54 @@
+<nav class="bg-white shadow-sm" data-controller="navbar">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div class="flex h-16 justify-between">
+      <div class="flex">
+        <div class="flex flex-shrink-0 items-center">
+          <%= link_to marketing_home_path, class: "flex items-center" do %>
+            <%= image_tag "logo.webp", class: "h-8 w-auto", alt: "Value Pulse Logo" %>
+            <span class="ml-2 text-xl font-semibold text-gray-900">Value Pulse</span>
+          <% end %>
+        </div>
+        <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+          <%= link_to "Home", marketing_home_path, class: "inline-flex items-center border-b-2 #{current_page?(marketing_home_path) ? 'border-indigo-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'} px-1 pt-1 text-sm font-medium" %>
+          <%= link_to "Analyze", property_analyzer_path, class: "inline-flex items-center border-b-2 #{current_page?(property_analyzer_path) ? 'border-indigo-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'} px-1 pt-1 text-sm font-medium" %>
+        </div>
+      </div>
+      <div class="hidden sm:ml-6 sm:flex sm:items-center">
+        <%= link_to "Try it now", property_analyzer_path, class: "rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600" %>
+      </div>
+      <div class="-mr-2 flex items-center sm:hidden">
+        <!-- Mobile menu button -->
+        <button type="button" 
+                class="relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" 
+                aria-controls="mobile-menu" 
+                aria-expanded="false" 
+                data-navbar-target="mobileMenuButton"
+                data-action="click->navbar#toggleMenu">
+          <span class="absolute -inset-0.5"></span>
+          <span class="sr-only">Open main menu</span>
+          <!-- Open menu icon -->
+          <svg data-navbar-target="openIcon" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+          </svg>
+          <!-- Close menu icon -->
+          <svg data-navbar-target="closeIcon" class="hidden h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile menu, show/hide based on menu state. -->
+  <div class="sm:hidden hidden" id="mobile-menu" data-navbar-target="mobileMenu">
+    <div class="space-y-1 pb-3 pt-2">
+      <%= link_to "Home", marketing_home_path, class: "block border-l-4 #{current_page?(marketing_home_path) ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-transparent text-gray-500 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700'} py-2 pl-3 pr-4 text-base font-medium" %>
+      <%= link_to "Property Analyzer", property_analyzer_path, class: "block border-l-4 #{current_page?(property_analyzer_path) ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-transparent text-gray-500 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700'} py-2 pl-3 pr-4 text-base font-medium" %>
+    </div>
+    <div class="border-t border-gray-200 pb-3 pt-4">
+      <div class="flex items-center px-4">
+        <%= link_to "Try it now", property_analyzer_path, class: "rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600" %>
+      </div>
+    </div>
+  </div>
+</nav> 

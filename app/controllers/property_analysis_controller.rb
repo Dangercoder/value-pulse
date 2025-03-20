@@ -1,7 +1,14 @@
 class PropertyAnalysisController < ApplicationController
+  def index
+    # Show the property analyzer form
+  end
+
   def analyze
-    @address = params[:address]
-    @additional_info = params[:additional_info]
+    @address = params[:property_analysis_address]
+    @additional_info = params[:property_analysis_additional_info]
+    @place_id = params[:property_analysis_place_id]
+    @latitude = params[:property_analysis_latitude]
+    @longitude = params[:property_analysis_longitude]
 
     if @address.blank? || @address.length < 5
       respond_to do |format|
@@ -32,6 +39,9 @@ class PropertyAnalysisController < ApplicationController
        @analysis = PropertyAnalysis.create(
           address: @address,
           additional_info: @additional_info || "",
+          place_id: @place_id,
+          latitude: @latitude,
+          longitude: @longitude,
           state: :pending
         )
 

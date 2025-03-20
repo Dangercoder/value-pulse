@@ -1,0 +1,55 @@
+/* Google Places Autocomplete styling */
+
+/* Main dropdown container */
+.pac-container {
+  border-radius: 0.5rem;
+  margin-top: 4px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(209, 213, 219, 1);
+  background-color: white;
+  z-index: 1100 !important;
+  font-family: inherit;
+}
+
+/* Item in dropdown */
+.pac-item {
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  border-top: 1px solid rgba(229, 231, 235, 1);
+}
+
+.pac-item:first-child {
+  border-top: none;
+}
+
+/* Hover state */
+.pac-item:hover {
+  background-color: rgba(243, 244, 246, 1);
+}
+
+/* Matched text in suggestions */
+.pac-item-query {
+  font-size: 0.9375rem;
+  color: rgba(17, 24, 39, 1);
+  font-weight: 500;
+}
+
+/* Matched part of text */
+.pac-matched {
+  font-weight: 700;
+  color: rgba(79, 70, 229, 1);
+}
+
+/* Secondary text */
+.pac-item-subtext {
+  font-size: 0.75rem;
+  color: rgba(107, 114, 128, 1);
+}
+
+/* Active/focused item */
+.pac-item-selected,
+.pac-item-selected:hover {
+  background-color: rgba(243, 244, 246, 1);
+} 

@@ -1,0 +1,241 @@
+<%= render "shared/navbar" %>
+
+<div class="w-full bg-white">
+  <%= turbo_stream_from "property_analysis_#{session.id.to_s}" %>
+
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="text-center mb-10">
+      <div class="flex justify-center mb-4">
+        <%= image_tag "logo.webp", class: "h-16 w-auto", alt: "Value Pulse Logo" %>
+      </div>
+      <h1 class="text-5xl font-bold text-gray-900 tracking-tight">
+        Value Pulse
+      </h1>
+      <p class="mt-4 text-xl text-gray-500">
+        Analyze property values with AI-powered insights
+      </p>
+    </div>
+
+    <!-- Main Content Area (Form or Results) -->
+    <div class="max-w-3xl mx-auto mb-8">
+      <!-- Analysis Result Container -->
+      <div id="analysis_result">
+        <!-- Initial Form Content -->
+        <div class="mb-6">
+          <h2 class="text-2xl font-semibold text-gray-900 mb-2">Property Details</h2>
+          <p class="text-gray-600">Enter detailed information about the property for accurate analysis.</p>
+        </div>
+
+        <%= form_with url: analyze_property_path, method: :post do |f| %>
+          <div class="space-y-6">
+            <!-- Property Address Field with Autocomplete -->
+            <div class="relative">
+              <div class="place-autocomplete-card mb-3">
+                <p class="text-base font-medium text-gray-900">Search for a place:</p>
+                <p class="text-xs text-gray-500">Try searching for an address, neighborhood, or "restaurants in New York"</p>
+              </div>
+              
+              <!-- Input field for address with our own autocomplete -->
+              <div class="autocomplete-container relative">
+                <%= f.text_field :property_analysis_address, 
+                    required: true,
+                    minlength: 5,
+                    id: "property-address-input",
+                    class: "block w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500",
+                    placeholder: "Enter an address or location...",
+                    autocomplete: "off" %>
+                
+                <div id="autocomplete-results" class="hidden absolute z-50 w-full bg-white rounded-md shadow-lg mt-1 max-h-60 overflow-auto border border-gray-300"></div>
+              </div>
+              
+              <!-- Hidden fields to store additional place data -->
+              <%= f.hidden_field :property_analysis_place_id, id: "place-id-field" %>
+              <%= f.hidden_field :property_analysis_latitude, id: "latitude-field" %>
+              <%= f.hidden_field :property_analysis_longitude, id: "longitude-field" %>
+            </div>
+
+            <!-- Additional Information Field -->
+            <div>
+              <label for="additional_info" class="block text-base font-medium text-gray-900 mb-2">
+                Additional Information <span class="text-gray-500 font-normal">(Optional)</span>
+              </label>
+              <%= f.text_area :property_analysis_additional_info,
+                  rows: 4,
+                  class: "block w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500",
+                  placeholder: "Any additional details about the property..." %>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="mt-6 flex justify-end">
+              <%= f.submit "Analyze Property", 
+                  class: "rounded-lg bg-indigo-600 px-6 py-3 text-base font-medium text-white hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2" %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="mt-8 border-t border-gray-200 pt-4 text-center text-gray-500 text-sm">
+      Powered by advanced AI analysis to provide accurate property valuations
+    </div>
+  </div>
+</div>
+
+<% content_for :head do %>
+  <script nonce="<%= request.content_security_policy_nonce %>">
+    document.addEventListener('DOMContentLoaded', function() {
+      const addressInput = document.getElementById('property-address-input');
+      const resultsContainer = document.getElementById('autocomplete-results');
+      const placeIdField = document.getElementById('place-id-field');
+      const latitudeField = document.getElementById('latitude-field');
+      const longitudeField = document.getElementById('longitude-field');
+      
+      let debounceTimer;
+      let currentQuery = '';
+      
+      // Add event listener for input changes
+      addressInput.addEventListener('input', function() {
+        const query = this.value.trim();
+        currentQuery = query;
+        
+        // Clear previous timer
+        clearTimeout(debounceTimer);
+        
+        // Hide results if query is too short
+        if (query.length < 3) {
+          resultsContainer.innerHTML = '';
+          resultsContainer.classList.add('hidden');
+          return;
+        }
+        
+        // Add loading indicator
+        resultsContainer.innerHTML = '<div class="px-4 py-3 text-gray-500 italic">Searching...</div>';
+        resultsContainer.classList.remove('hidden');
+        
+        // Set a debounce timer to avoid too many requests
+        debounceTimer = setTimeout(() => {
+          fetchSuggestions(query);
+        }, 300);
+      });
+      
+      // Add event listener for keyboard navigation
+      addressInput.addEventListener('keydown', function(e) {
+        if (resultsContainer.classList.contains('hidden')) return;
+        
+        const items = resultsContainer.querySelectorAll('.autocomplete-item');
+        const selectedItem = resultsContainer.querySelector('.bg-gray-100');
+        let selectedIndex = Array.from(items).indexOf(selectedItem);
+        
+        switch (e.key) {
+          case 'ArrowDown':
+            e.preventDefault();
+            if (selectedIndex < items.length - 1) {
+              if (selectedItem) selectedItem.classList.remove('bg-gray-100');
+              items[selectedIndex + 1].classList.add('bg-gray-100');
+              items[selectedIndex + 1].scrollIntoView({ block: 'nearest' });
+            }
+            break;
+            
+          case 'ArrowUp':
+            e.preventDefault();
+            if (selectedIndex > 0) {
+              if (selectedItem) selectedItem.classList.remove('bg-gray-100');
+              items[selectedIndex - 1].classList.add('bg-gray-100');
+              items[selectedIndex - 1].scrollIntoView({ block: 'nearest' });
+            }
+            break;
+            
+          case 'Enter':
+            e.preventDefault();
+            if (selectedItem) selectedItem.click();
+            break;
+            
+          case 'Escape':
+            resultsContainer.innerHTML = '';
+            resultsContainer.classList.add('hidden');
+            break;
+        }
+      });
+      
+      // Close dropdown when clicking outside
+      document.addEventListener('click', function(e) {
+        if (!addressInput.contains(e.target) && !resultsContainer.contains(e.target)) {
+          resultsContainer.innerHTML = '';
+          resultsContainer.classList.add('hidden');
+        }
+      });
+      
+      // Function to fetch suggestions from our backend
+      async function fetchSuggestions(query) {
+        try {
+          // Skip if the query has changed (user is still typing)
+          if (query !== currentQuery) return;
+          
+          const response = await fetch(`/places/autocomplete?query=${encodeURIComponent(query)}`);
+          
+          if (!response.ok) {
+            throw new Error(`HTTP error ${response.status}`);
+          }
+          
+          const data = await response.json();
+          
+          // Skip if the query has changed while waiting for the response
+          if (query !== currentQuery) return;
+          
+          // Clear and hide results container if no suggestions
+          if (!data.predictions || data.predictions.length === 0) {
+            resultsContainer.innerHTML = '<div class="px-4 py-3 text-gray-500">No results found</div>';
+            return;
+          }
+          
+          // Build the results HTML
+          resultsContainer.innerHTML = '';
+          data.predictions.forEach(place => {
+            const item = document.createElement('div');
+            item.className = 'autocomplete-item px-4 py-2 cursor-pointer hover:bg-gray-100';
+            
+            // Create a nice display for the result
+            const hasLocation = place.latitude && place.longitude;
+            const locationClass = hasLocation ? 'text-green-600' : 'text-yellow-600';
+            const locationIcon = hasLocation ? '📍' : '🔍';
+            
+            item.innerHTML = `
+              <div class="font-medium">${place.name || ''}</div>
+              <div class="text-sm text-gray-600">${place.description || ''}</div>
+              <div class="text-xs ${locationClass} mt-1">${locationIcon} ${hasLocation ? 'Mappable location' : 'General area search'}</div>
+            `;
+            
+            // Add click handler for selecting a place
+            item.addEventListener('click', function() {
+              // Fill the input with the selected address
+              addressInput.value = place.description || place.name;
+              
+              // Fill hidden fields with place details
+              placeIdField.value = place.place_id || '';
+              latitudeField.value = place.latitude || '';
+              longitudeField.value = place.longitude || '';
+              
+              // Hide the results
+              resultsContainer.innerHTML = '';
+              resultsContainer.classList.add('hidden');
+              
+              // Trigger change event
+              addressInput.dispatchEvent(new Event('change', { bubbles: true }));
+            });
+            
+            resultsContainer.appendChild(item);
+          });
+          
+          // Show the results container
+          resultsContainer.classList.remove('hidden');
+          
+        } catch (error) {
+          console.error("Error fetching address suggestions:", error);
+          resultsContainer.innerHTML = '<div class="px-4 py-3 text-red-500">Error fetching suggestions</div>';
+        }
+      }
+    });
+  </script>
+<% end %> 
